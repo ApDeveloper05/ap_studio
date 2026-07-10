@@ -81,3 +81,24 @@ ENABLE_GUI = False
 ENABLE_AI = False
 
 ENABLE_PLUGIN_SYSTEM = False
+
+
+# ==========================================================
+# Authentication Settings
+# ==========================================================
+
+PASSWORD_HASH_ALGORITHM = "pbkdf2_sha256"
+
+PASSWORD_HASH_ITERATIONS = 100_000
+
+PASSWORD_SALT_LENGTH = 32
+
+OTP_LENGTH = 6
+
+OTP_EXPIRY_MINUTES = 15
+
+OTP_MAX_RETRY = 3
+
+SESSION_EXPIRY_HOURS = 24
+
+MAX_LOGIN_ATTEMPTS = 3

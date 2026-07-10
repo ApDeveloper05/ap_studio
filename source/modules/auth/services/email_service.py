@@ -5,7 +5,7 @@ File: email_service.py
 Module: Authentication Services
 
 Purpose:
-Handle email delivery for AP Studio Authentication.
+Handle authentication related emails.
 
 Author:
 Aryan Parmar
@@ -15,38 +15,150 @@ AP Studio
 ------------------------------------------------------------
 """
 
+from django.conf import settings
+from django.core.mail import send_mail
+
 
 class EmailService:
     """
-    Handle all authentication related emails.
+    Handle email delivery.
     """
 
-    def send_welcome_email(self) -> None:
+    @staticmethod
+    def send_email(
+        subject: str,
+        message: str,
+        recipient: str,
+    ) -> bool:
+        """
+        Send email.
+        """
+
+        try:
+
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[recipient],
+                fail_silently=False,
+            )
+
+            return True
+
+        except Exception:
+
+            return False
+
+    @classmethod
+    def send_welcome_email(
+        cls,
+        recipient: str,
+    ) -> bool:
         """
         Send welcome email.
         """
-        pass
 
-    def send_verification_email(self) -> None:
-        """
-        Send email verification link or OTP.
-        """
-        pass
+        subject = "Welcome to AP Studio"
 
-    def send_password_reset_email(self) -> None:
-        """
-        Send password reset email.
-        """
-        pass
+        message = (
+            "Welcome to AP Studio.\n\n"
+            "Your account has been created successfully."
+        )
 
-    def send_account_locked_email(self) -> None:
-        """
-        Notify user about account lock.
-        """
-        pass
+        return cls.send_email(
+            subject,
+            message,
+            recipient,
+        )
 
-    def send_account_unlocked_email(self) -> None:
+    @classmethod
+    def send_verification_email(
+        cls,
+        recipient: str,
+        otp: str,
+    ) -> bool:
         """
-        Notify user after account unlock.
+        Send email verification OTP.
         """
-        pass
+
+        subject = "Verify Your Email"
+
+        message = (
+            "Your verification OTP is:\n\n"
+            f"{otp}\n\n"
+            "This OTP is valid for 15 minutes."
+        )
+
+        return cls.send_email(
+            subject,
+            message,
+            recipient,
+        )
+
+    @classmethod
+    def send_password_reset_email(
+        cls,
+        recipient: str,
+        otp: str,
+    ) -> bool:
+        """
+        Send password reset OTP.
+        """
+
+        subject = "Password Reset"
+
+        message = (
+            "Your password reset OTP is:\n\n"
+            f"{otp}\n\n"
+            "This OTP is valid for 15 minutes."
+        )
+
+        return cls.send_email(
+            subject,
+            message,
+            recipient,
+        )
+
+    @classmethod
+    def send_account_locked_email(
+        cls,
+        recipient: str,
+    ) -> bool:
+        """
+        Notify account lock.
+        """
+
+        subject = "Account Locked"
+
+        message = (
+            "Your account has been temporarily locked "
+            "because of multiple failed login attempts."
+        )
+
+        return cls.send_email(
+            subject,
+            message,
+            recipient,
+        )
+
+    @classmethod
+    def send_account_unlocked_email(
+        cls,
+        recipient: str,
+    ) -> bool:
+        """
+        Notify account unlock.
+        """
+
+        subject = "Account Unlocked"
+
+        message = (
+            "Your account has been unlocked successfully."
+        )
+
+        return cls.send_email(
+            subject,
+            message,
+            recipient,
+        )

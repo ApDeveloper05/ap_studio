@@ -5,7 +5,7 @@ File: password_service.py
 Module: Authentication Services
 
 Purpose:
-Handle password management.
+Handle password management for AP Studio.
 
 Author:
 Aryan Parmar
@@ -15,32 +15,86 @@ AP Studio
 ------------------------------------------------------------
 """
 
+from django.utils import timezone
+
+from source.modules.auth.models.user import User
+from source.modules.auth.services.password_hasher import PasswordHasher
+
 
 class PasswordService:
     """
-    Handle password related operations.
+    Handle password operations.
     """
 
-    def hash_password(self) -> None:
+    @staticmethod
+    def hash(password: str) -> str:
         """
-        Generate secure password hash.
+        Generate password hash.
         """
-        pass
 
-    def verify_password(self) -> None:
-        """
-        Verify password hash.
-        """
-        pass
+        return PasswordHasher.hash_password(password)
 
-    def change_password(self) -> None:
+    @staticmethod
+    def verify(
+        password: str,
+        stored_password: str,
+    ) -> bool:
+        """
+        Verify password.
+        """
+
+        return PasswordHasher.verify_password(
+            password,
+            stored_password,
+        )
+
+    @classmethod
+    def change_password(
+        cls,
+        user: User,
+        current_password: str,
+        new_password: str,
+    ) -> bool:
         """
         Change user password.
         """
-        pass
 
-    def reset_password(self) -> None:
+        if not cls.verify(
+            current_password,
+            user.password,
+        ):
+            return False
+
+        user.password = cls.hash(new_password)
+
+        user.password_changed_at = timezone.now()
+
+        user.save(
+            update_fields=[
+                "password",
+                "password_changed_at",
+            ]
+        )
+
+        return True
+
+    @classmethod
+    def reset_password(
+        cls,
+        user: User,
+        new_password: str,
+    ) -> None:
         """
-        Reset forgotten password.
+        Reset user password.
         """
-        pass
+
+        user.password = cls.hash(new_password)
+
+        user.password_changed_at = timezone.now()
+
+        user.save(
+            update_fields=[
+                "password",
+                "password_changed_at",
+            ]
+        )

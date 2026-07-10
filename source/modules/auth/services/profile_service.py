@@ -15,32 +15,73 @@ AP Studio
 ------------------------------------------------------------
 """
 
+from source.modules.auth.models.profile import Profile
+from source.modules.auth.models.user import User
+
 
 class ProfileService:
     """
-    Handle profile related operations.
+    Handle profile operations.
     """
 
-    def create(self) -> None:
+    @staticmethod
+    def create(
+        user: User,
+        **profile_data,
+    ) -> Profile:
         """
-        Create user profile.
+        Create a new profile.
         """
-        pass
 
-    def update(self) -> None:
-        """
-        Update user profile.
-        """
-        pass
+        return Profile.objects.create(
+            user=user,
+            **profile_data,
+        )
 
-    def get(self) -> None:
+    @staticmethod
+    def get(
+        user: User,
+    ) -> Profile:
         """
         Return user profile.
         """
-        pass
 
-    def delete(self) -> None:
+        return Profile.objects.get(
+            user=user,
+        )
+
+    @staticmethod
+    def update(
+        user: User,
+        **profile_data,
+    ) -> Profile:
+        """
+        Update user profile.
+        """
+
+        profile = Profile.objects.get(
+            user=user,
+        )
+
+        for field, value in profile_data.items():
+
+            if hasattr(profile, field):
+                setattr(profile, field, value)
+
+        profile.save()
+
+        return profile
+
+    @staticmethod
+    def delete(
+        user: User,
+    ) -> None:
         """
         Soft delete user profile.
         """
-        pass
+
+        profile = Profile.objects.get(
+            user=user,
+        )
+
+        profile.soft_delete()
