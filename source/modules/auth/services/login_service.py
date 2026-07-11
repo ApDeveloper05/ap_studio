@@ -18,9 +18,10 @@ AP Studio
 from django.utils import timezone
 
 from source.modules.auth.models.user import User
+
 from source.modules.auth.services.password_service import PasswordService
-from source.modules.auth.services.session_service import SessionService
 from source.modules.auth.services.security_service import SecurityService
+from source.modules.auth.services.session_service import SessionService
 
 
 class LoginService:
@@ -36,14 +37,16 @@ class LoginService:
         password: str,
         ip_address: str,
         user_agent: str,
-    ):
+    ) -> dict:
         """
-        Authenticate user and create session.
+        Authenticate user.
         """
 
         try:
 
-            user = User.objects.get(email=email)
+            user = User.objects.get(
+                email=email,
+            )
 
         except User.DoesNotExist:
 
@@ -55,7 +58,12 @@ class LoginService:
                 reason="User not found",
             )
 
-            return None
+            return {
+                "success": False,
+                "code": "USER_NOT_FOUND",
+                "message": "User not found.",
+                "data": None,
+            }
 
         if user.is_locked:
 
@@ -68,14 +76,21 @@ class LoginService:
                 user=user,
             )
 
-            return None
+            return {
+                "success": False,
+                "code": "ACCOUNT_LOCKED",
+                "message": "Account is locked.",
+                "data": None,
+            }
 
         if not PasswordService.verify(
             password,
             user.password,
         ):
 
-            SecurityService.record_failed_password(user)
+            SecurityService.record_failed_password(
+                user,
+            )
 
             SecurityService.record_login_attempt(
                 email=email,
@@ -86,7 +101,12 @@ class LoginService:
                 user=user,
             )
 
-            return None
+            return {
+                "success": False,
+                "code": "INVALID_PASSWORD",
+                "message": "Invalid password.",
+                "data": None,
+            }
 
         if not user.is_email_verified:
 
@@ -99,7 +119,12 @@ class LoginService:
                 user=user,
             )
 
-            return None
+            return {
+                "success": False,
+                "code": "EMAIL_NOT_VERIFIED",
+                "message": "Email is not verified.",
+                "data": None,
+            }
 
         user.failed_login_attempts = 0
 
@@ -120,18 +145,41 @@ class LoginService:
             user=user,
         )
 
-        return SessionService.create(
+        session = SessionService.create(
             user=user,
             ip_address=ip_address,
             user_agent=user_agent,
         )
 
+        return {
+            "success": True,
+            "code": "LOGIN_SUCCESS",
+            "message": "Login successful.",
+            "data": session,
+        }
+
     @staticmethod
     def logout(
         session_token: str,
-    ) -> bool:
+    ) -> dict:
         """
         Logout current user.
         """
 
-        return SessionService.destroy(session_token)
+        if SessionService.destroy(
+            session_token,
+        ):
+
+            return {
+                "success": True,
+                "code": "LOGOUT_SUCCESS",
+                "message": "Logout successful.",
+                "data": None,
+            }
+
+        return {
+            "success": False,
+            "code": "INVALID_SESSION",
+            "message": "Invalid session.",
+            "data": None,
+        }

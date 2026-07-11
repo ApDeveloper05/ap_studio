@@ -38,7 +38,8 @@ class Profile(BaseModel):
 
     phone_number = models.CharField(
         max_length=15,
-        unique=True,
+        blank=True,
+        null=True,
     )
 
     profile_picture = models.ImageField(

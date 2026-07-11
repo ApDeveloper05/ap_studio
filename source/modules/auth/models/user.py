@@ -64,9 +64,14 @@ class User(BaseModel):
         default=False,
     )
 
-    last_login = models.DateTimeField(
-        null=True,
+    lock_until = models.DateTimeField(
         blank=True,
+        null=True,
+    )
+
+    last_login = models.DateTimeField(
+        blank=True,
+        null=True,
     )
 
     password_changed_at = models.DateTimeField(

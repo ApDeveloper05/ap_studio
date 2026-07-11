@@ -102,3 +102,12 @@ OTP_MAX_RETRY = 3
 SESSION_EXPIRY_HOURS = 24
 
 MAX_LOGIN_ATTEMPTS = 3
+
+
+# ==========================================================
+# Email Settings (Testing Mode)
+# ==========================================================
+
+# Use console backend to print emails/OTPs to the terminal during testing.
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_HOST_USER = "testing@apstudio.com"

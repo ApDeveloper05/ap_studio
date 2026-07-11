@@ -30,11 +30,30 @@ class OTPType(models.TextChoices):
     Supported OTP types.
     """
 
-    EMAIL_VERIFICATION = "EMAIL_VERIFICATION", "Email Verification"
-    PASSWORD_RESET = "PASSWORD_RESET", "Password Reset"
-    LOGIN_VERIFICATION = "LOGIN_VERIFICATION", "Login Verification"
-    PHONE_VERIFICATION = "PHONE_VERIFICATION", "Phone Verification"
-    ACCOUNT_UNLOCK = "ACCOUNT_UNLOCK", "Account Unlock"
+    EMAIL_VERIFICATION = (
+        "EMAIL_VERIFICATION",
+        "Email Verification",
+    )
+
+    PASSWORD_RESET = (
+        "PASSWORD_RESET",
+        "Password Reset",
+    )
+
+    LOGIN_VERIFICATION = (
+        "LOGIN_VERIFICATION",
+        "Login Verification",
+    )
+
+    PHONE_VERIFICATION = (
+        "PHONE_VERIFICATION",
+        "Phone Verification",
+    )
+
+    ACCOUNT_UNLOCK = (
+        "ACCOUNT_UNLOCK",
+        "Account Unlock",
+    )
 
 
 # ==========================================================
@@ -53,7 +72,7 @@ class OTP(BaseModel):
     )
 
     otp = models.CharField(
-        max_length=6,
+        max_length=10,
     )
 
     otp_type = models.CharField(
@@ -79,4 +98,8 @@ class OTP(BaseModel):
         db_table = "aps_otps"
 
     def __str__(self) -> str:
-        return f"{self.user.email} | {self.otp_type}"
+        return (
+            f"{self.user.email}"
+            f" | "
+            f"{self.otp_type}"
+        )

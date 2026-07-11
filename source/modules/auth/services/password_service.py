@@ -27,12 +27,16 @@ class PasswordService:
     """
 
     @staticmethod
-    def hash(password: str) -> str:
+    def hash(
+        password: str,
+    ) -> str:
         """
         Generate password hash.
         """
 
-        return PasswordHasher.hash_password(password)
+        return PasswordHasher.hash_password(
+            password,
+        )
 
     @staticmethod
     def verify(
@@ -51,10 +55,11 @@ class PasswordService:
     @classmethod
     def change_password(
         cls,
+        *,
         user: User,
         current_password: str,
         new_password: str,
-    ) -> bool:
+    ) -> dict:
         """
         Change user password.
         """
@@ -63,9 +68,17 @@ class PasswordService:
             current_password,
             user.password,
         ):
-            return False
 
-        user.password = cls.hash(new_password)
+            return {
+                "success": False,
+                "code": "INVALID_PASSWORD",
+                "message": "Current password is incorrect.",
+                "data": None,
+            }
+
+        user.password = cls.hash(
+            new_password,
+        )
 
         user.password_changed_at = timezone.now()
 
@@ -76,19 +89,27 @@ class PasswordService:
             ]
         )
 
-        return True
+        return {
+            "success": True,
+            "code": "PASSWORD_CHANGED",
+            "message": "Password changed successfully.",
+            "data": user,
+        }
 
     @classmethod
     def reset_password(
         cls,
+        *,
         user: User,
         new_password: str,
-    ) -> None:
+    ) -> dict:
         """
         Reset user password.
         """
 
-        user.password = cls.hash(new_password)
+        user.password = cls.hash(
+            new_password,
+        )
 
         user.password_changed_at = timezone.now()
 
@@ -98,3 +119,10 @@ class PasswordService:
                 "password_changed_at",
             ]
         )
+
+        return {
+            "success": True,
+            "code": "PASSWORD_RESET",
+            "message": "Password reset successfully.",
+            "data": user,
+        }
