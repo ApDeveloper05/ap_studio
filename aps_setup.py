@@ -85,11 +85,11 @@ def main():
         settings_content
     )
     
-    # Inject MIDDLEWARE
-    middleware_to_inject = "    'source.modules.auth.middleware.authentication.AuthenticationMiddleware',\n"
+    # Inject MIDDLEWARE after SessionMiddleware
+    middleware_to_inject = "    'django.contrib.sessions.middleware.SessionMiddleware',\n    'source.modules.auth.middleware.authentication.AuthenticationMiddleware',"
     settings_content = re.sub(
-        r"MIDDLEWARE = \[",
-        f"MIDDLEWARE = [\n{middleware_to_inject}",
+        r"    'django\.contrib\.sessions\.middleware\.SessionMiddleware',",
+        middleware_to_inject,
         settings_content
     )
     
