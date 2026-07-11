@@ -25,6 +25,7 @@ class AuthConfig(AppConfig):
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "source.modules.auth"
+    label = "aps_auth"
     verbose_name = "Authentication"
 
     def ready(self) -> None:
