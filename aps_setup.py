@@ -132,6 +132,7 @@ EMAIL_HOST_USER = "testing@apstudio.com"
         f.write(urls_content)
         
     print_info("Running Database Migrations...")
+    run_command(f'"{python_exe}" manage.py makemigrations aps_auth', cwd=project_root)
     run_command(f'"{python_exe}" manage.py makemigrations', cwd=project_root)
     run_command(f'"{python_exe}" manage.py migrate', cwd=project_root)
     
