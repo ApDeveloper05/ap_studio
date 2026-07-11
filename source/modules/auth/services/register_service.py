@@ -40,7 +40,6 @@ class RegisterService:
         last_name: str,
         email: str,
         password: str,
-        role_name: str,
     ) -> dict:
         """
         Register a new user.
@@ -60,7 +59,7 @@ class RegisterService:
             with transaction.atomic():
 
                 role = Role.objects.get(
-                    role_name=role_name,
+                    role_name='user',
                 )
 
                 user = User.objects.create(

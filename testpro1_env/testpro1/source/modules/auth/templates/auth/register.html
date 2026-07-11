@@ -1,0 +1,44 @@
+{% extends "auth/base.html" %}
+
+{% block title %}Register - AP Studio{% endblock %}
+
+{% block content %}
+<h2>Create Account</h2>
+<form method="post" action="{% url 'auth:register' %}">
+    {% csrf_token %}
+    {% if form.errors %}
+        <div class="alert alert-error">
+            Please correct the errors below.
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+    <div class="form-group">
+        <label for="id_first_name">First Name</label>
+        {{ form.first_name }}
+    </div>
+    <div class="form-group">
+        <label for="id_last_name">Last Name</label>
+        {{ form.last_name }}
+    </div>
+    <div class="form-group">
+        <label for="id_email">Email</label>
+        {{ form.email }}
+    </div>
+    <div class="form-group">
+        <label for="id_password">Password</label>
+        {{ form.password }}
+    </div>
+    <div class="form-group">
+        <label for="id_confirm_password">Confirm Password</label>
+        {{ form.confirm_password }}
+    </div>
+    <div class="form-group">
+        <label for="id_role_name">Role</label>
+        {{ form.role_name }}
+    </div>
+    <button type="submit">Sign Up</button>
+</form>
+<div class="links">
+    <p>Already have an account? <a href="{% url 'auth:login' %}">Log In</a></p>
+</div>
+{% endblock %}

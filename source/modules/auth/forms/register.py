@@ -50,9 +50,7 @@ class RegisterForm(forms.Form):
         required=True,
     )
 
-    role_name = forms.CharField(
-        required=True,
-    )
+
 
     def clean_email(self):
         """

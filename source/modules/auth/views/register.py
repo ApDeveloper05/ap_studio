@@ -39,7 +39,6 @@ def register(request):
                 last_name=form.cleaned_data["last_name"],
                 email=form.cleaned_data["email"],
                 password=form.cleaned_data["password"],
-                role_name=form.cleaned_data["role_name"],
             )
 
             if response["success"]:
