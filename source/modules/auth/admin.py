@@ -53,8 +53,8 @@ class SessionAdmin(admin.ModelAdmin):
 
 @admin.register(OTP)
 class OTPAdmin(admin.ModelAdmin):
-    list_display = ("user", "otp_type", "created_at", "expires_at", "is_used")
-    list_filter = ("otp_type", "is_used")
+    list_display = ("user", "otp_type", "created_at", "expires_at", "is_verified")
+    list_filter = ("otp_type", "is_verified")
 
 
 @admin.register(LoginAttempt)

@@ -53,8 +53,8 @@ def main():
         python_exe = env_dir / "bin" / "python"
         django_admin = env_dir / "bin" / "django-admin"
         
-    print_info("Installing Django...")
-    run_command(f'"{python_exe}" -m pip install django')
+    print_info("Installing Django and dependencies...")
+    run_command(f'"{python_exe}" -m pip install django pillow')
     
     print_info(f"Creating Django Project: {project_name}...")
     run_command(f'"{django_admin}" startproject {project_name}', cwd=env_dir)
