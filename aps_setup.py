@@ -136,6 +136,28 @@ EMAIL_HOST_USER = "testing@apstudio.com"
     run_command(f'"{python_exe}" manage.py makemigrations', cwd=project_root)
     run_command(f'"{python_exe}" manage.py migrate', cwd=project_root)
     
+    print_info("Seeding default roles...")
+    seed_script = f"""
+import os
+import sys
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', '{project_name}.settings')
+django.setup()
+
+from source.modules.auth.models.role import Role
+
+roles = ['admin', 'user', 'manager']
+for r in roles:
+    Role.objects.get_or_create(role_name=r, defaults={{'description': f'Default {{r}} role'}})
+print("Roles seeded successfully.")
+"""
+    seed_file = project_root / "seed_roles.py"
+    with open(seed_file, "w") as f:
+        f.write(seed_script)
+    run_command(f'"{python_exe}" seed_roles.py', cwd=project_root)
+    seed_file.unlink() # Delete after running
+    
     print_success("Project Ready! Authentication Pre-Installed.")
     print(f"\nTo start your server:")
     if os.name == 'nt':

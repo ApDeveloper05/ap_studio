@@ -6,6 +6,12 @@
 <h2>Create Account</h2>
 <form method="post" action="{% url 'auth:register' %}">
     {% csrf_token %}
+    {% if form.errors %}
+        <div class="alert alert-error">
+            Please correct the errors below.
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
     <div class="form-group">
         <label for="id_first_name">First Name</label>
         {{ form.first_name }}
