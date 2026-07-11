@@ -112,12 +112,15 @@ EMAIL_HOST_USER = "testing@apstudio.com"
     with open(urls_file, "r") as f:
         urls_content = f.read()
         
-    # Inject 'include' into imports
-    urls_content = urls_content.replace("from django.urls import path", "from django.urls import path, include")
+    urls_content = urls_content.replace(
+        "from django.urls import path", 
+        "from django.urls import path, include\nfrom django.views.generic import RedirectView"
+    )
     
-    # Inject auth routes
+    # Inject auth routes and root redirect
     urls_injection = """
     path('auth/', include('source.modules.auth.urls')),
+    path('', RedirectView.as_view(url='/auth/login/', permanent=False)),
 """
     urls_content = re.sub(
         r"urlpatterns = \[",
