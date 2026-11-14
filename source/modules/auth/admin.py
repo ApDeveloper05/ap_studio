@@ -24,6 +24,21 @@ from source.modules.auth.models.session import Session
 from source.modules.auth.models.otp import OTP
 from source.modules.auth.models.login_attempt import LoginAttempt
 from source.modules.auth.models.email_verification import EmailVerification
+from source.modules.auth.models.security import BlockedRegistration, SeizedAccount
+
+
+@admin.register(BlockedRegistration)
+class BlockedRegistrationAdmin(admin.ModelAdmin):
+    list_display = ("email", "blocked_until", "failure_count", "is_active", "created_at")
+    search_fields = ("email", "ip_address")
+    list_filter = ("is_active", "created_at")
+
+
+@admin.register(SeizedAccount)
+class SeizedAccountAdmin(admin.ModelAdmin):
+    list_display = ("email", "user", "seized_until", "is_recovered", "created_at")
+    search_fields = ("email", "user__email")
+    list_filter = ("is_recovered", "created_at")
 
 
 @admin.register(User)

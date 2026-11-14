@@ -1,0 +1,54 @@
+{% extends "auth/base.html" %}
+
+{% block title %}Account Seized - AP Studio Security{% endblock %}
+
+{% block content %}
+<div style="text-align: center;">
+    <div style="font-size: 3rem; margin-bottom: 0.5rem;">🛑</div>
+    <h2 style="color: #b91c1c; margin-bottom: 0.5rem;">Account Frozen (24 Hours)</h2>
+    <p style="color: #4b5563; font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Your AP Studio account for <strong>{{ email }}</strong> has been temporarily frozen for <strong>24 hours</strong>. All active sessions across all devices have been terminated.
+    </p>
+
+    <div style="background-color: #fef2f2; border: 1px solid #ef4444; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+        <div style="font-size: 0.85rem; color: #991b1b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+            Freeze Remaining
+        </div>
+        <div id="countdown" style="font-size: 1.75rem; font-weight: 700; color: #7f1d1d; font-family: monospace;">
+            {{ remaining_formatted }}
+        </div>
+    </div>
+
+    <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 1.5rem;">
+        An automated notification has been dispatched to your email address. Once the freeze period finishes, you will receive a secure re-verification link to safely unlock your account.
+    </p>
+
+    <div class="links">
+        <a href="{% url 'auth:login' %}">← Return to Login</a>
+    </div>
+</div>
+
+<script>
+    let remainingSeconds = {{ remaining_seconds|default:86400 }};
+    const countdownElement = document.getElementById("countdown");
+
+    function updateTimer() {
+        if (remainingSeconds <= 0) {
+            countdownElement.innerText = "Freeze Ended. Check email for recovery link.";
+            return;
+        }
+        remainingSeconds--;
+        const hours = Math.floor(remainingSeconds / 3600);
+        const minutes = Math.floor((remainingSeconds % 3600) / 60);
+        const seconds = remainingSeconds % 60;
+        countdownElement.innerText = 
+            String(hours).padStart(2, '0') + "h " +
+            String(minutes).padStart(2, '0') + "m " +
+            String(seconds).padStart(2, '0') + "s";
+    }
+
+    if (remainingSeconds > 0) {
+        setInterval(updateTimer, 1000);
+    }
+</script>
+{% endblock %}

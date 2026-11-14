@@ -17,6 +17,7 @@
     <button type="submit">Login</button>
 </form>
 <div class="links">
+    <p><a href="{% url 'auth:login_otp' %}" style="color: #059669; font-weight: 600;">🔑 Emergency Login with OTP</a></p>
     <p><a href="{% url 'auth:forgot_password' %}">Forgot Password?</a></p>
     <p>Don't have an account? <a href="{% url 'auth:register' %}">Sign Up</a></p>
 </div>

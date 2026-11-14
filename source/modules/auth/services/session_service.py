@@ -18,7 +18,7 @@ AP Studio
 from datetime import timedelta
 import secrets
 
-from django.utils import timezone
+from django.utils import timezone       
 
 from source.modules.auth.models.session import Session
 from source.modules.auth.models.user import User
@@ -132,3 +132,36 @@ class SessionService:
         )
 
         return True
+
+    @staticmethod
+    def destroy_all_for_user(
+        user: User,
+    ) -> int:
+        """
+        Instant Multi-Device Killswitch.
+        Destroy all active sessions across all devices for this user.
+        """
+
+        return Session.objects.filter(
+            user=user,
+            is_expired=False,
+        ).update(
+            is_expired=True,
+        )
+
+    @staticmethod
+    def destroy_all_for_user(
+        user: User,
+    ) -> int:
+        """
+        Instant Multi-Device Killswitch.
+        Destroy all active sessions across all devices for this user.
+        """
+
+        return Session.objects.filter(
+            user=user,
+            is_expired=False,
+        ).update(
+            is_expired=True,
+        )
+

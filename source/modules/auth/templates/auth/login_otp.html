@@ -1,0 +1,56 @@
+{% extends "auth/base.html" %}
+
+{% block title %}Emergency Login with 8-Digit OTP - AP Studio{% endblock %}
+
+{% block content %}
+<h2>🔑 Login with OTP</h2>
+<p style="text-align: center; color: #4b5563; font-size: 0.9rem; margin-bottom: 1.5rem;">
+    Emergency passwordless access using a cryptographically secure 8-digit code.
+</p>
+
+{% if step == 1 %}
+    <form method="post" action="{% url 'auth:login_otp' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="request_otp">
+        
+        <div class="form-group">
+            <label for="email">Enter Registered Email</label>
+            <input type="email" name="email" id="email" value="{{ email }}" placeholder="you@domain.com" required autofocus>
+        </div>
+
+        <button type="submit" style="margin-top: 0.5rem;">Send 8-Digit Code</button>
+    </form>
+{% else %}
+    <div style="background-color: #eff6ff; border: 1px solid #93c5fd; border-radius: 6px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem; color: #1e40af; text-align: center;">
+        8-Digit code sent to <strong>{{ email }}</strong>
+    </div>
+
+    <form method="post" action="{% url 'auth:login_otp' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="verify_otp">
+        <input type="hidden" name="email" value="{{ email }}">
+
+        <div class="form-group">
+            <label for="otp" style="text-align: center; font-weight: 600;">Enter 8-Digit Security Code</label>
+            <input type="text" name="otp" id="otp" maxlength="8" placeholder="••••••••" 
+                   style="text-align: center; font-size: 1.5rem; letter-spacing: 0.35em; font-family: monospace; font-weight: 700;" 
+                   required autofocus autocomplete="one-time-code">
+        </div>
+
+        <button type="submit" style="background-color: #059669;">Verify & Login</button>
+    </form>
+
+    <form method="post" action="{% url 'auth:login_otp' %}" style="margin-top: 0.75rem;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="request_otp">
+        <input type="hidden" name="email" value="{{ email }}">
+        <button type="submit" style="background: none; border: 1px solid #d1d5db; color: #4b5563; font-size: 0.85rem; padding: 0.5rem;">
+            Resend 8-Digit Code
+        </button>
+    </form>
+{% endif %}
+
+<div class="links" style="margin-top: 1.5rem;">
+    <a href="{% url 'auth:login' %}">← Password Login</a>
+</div>
+{% endblock %}
