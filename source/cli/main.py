@@ -2,6 +2,7 @@
 AP Studio CLI Entry Point
 """
 
+import sys
 from source.cli.parser import create_parser
 from source.cli.commands import CommandRegistry
 from source.cli.version import (
@@ -24,9 +25,16 @@ def banner() -> None:
 
 def main() -> None:
     parser = create_parser()
-    parser.parse_args()
+    args = parser.parse_args()
+
     command_registry = CommandRegistry()
-    banner()
+
+    if args.command:
+        banner()
+        command_registry.execute(args.command, args)
+    else:
+        banner()
+        parser.print_help()
 
 
 if __name__ == "__main__":

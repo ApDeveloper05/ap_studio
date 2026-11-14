@@ -67,6 +67,14 @@ def info(message: str) -> None:
     LOGGER.info(message)
 
 
+def success(message: str) -> None:
+    """
+    Log a success message.
+    """
+
+    LOGGER.info(f"[SUCCESS] {message}")
+
+
 def warning(message: str) -> None:
     """
     Log a warning message.
