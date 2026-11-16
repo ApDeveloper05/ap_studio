@@ -81,5 +81,15 @@ class User(BaseModel):
     class Meta:
         db_table = "aps_users"
 
+    @property
+    def is_authenticated(self) -> bool:
+        """Always return True for User instances (Django & DRF compatibility)."""
+        return True
+
+    @property
+    def is_anonymous(self) -> bool:
+        """Always return False for User instances (Django & DRF compatibility)."""
+        return False
+
     def __str__(self) -> str:
         return self.email

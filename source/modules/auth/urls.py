@@ -15,7 +15,7 @@ AP Studio
 ------------------------------------------------------------
 """
 
-from django.urls import path
+from django.urls import include, path
 
 from source.modules.auth.views.register import register
 from source.modules.auth.views.login import login
@@ -31,6 +31,10 @@ from source.modules.auth.views.recover_account import recover_account
 app_name = "auth"
 
 urlpatterns = [
+    # REST API Endpoints (Mobile / React / Next.js)
+    path("api/", include("source.modules.auth.api.urls")),
+
+    # Server-Rendered HTML Views
     path("register/", register, name="register"),
     path("login/", login, name="login"),
     path("login-otp/", login_with_otp, name="login_otp"),
