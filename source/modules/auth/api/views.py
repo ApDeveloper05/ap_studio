@@ -28,12 +28,21 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from source.modules.auth.api.authentication import APStudioJWTAuthentication
+from source.modules.auth.api.permissions import (
+    IsAdminRole,
+    IsEmailVerified,
+    IsManagerRole,
+    IsOwnerOrAdmin,
+    require_roles,
+)
 from source.modules.auth.api.serializers import (
+    AssignRoleSerializer,
     LoginOTPRequestSerializer,
     LoginOTPVerifySerializer,
     LoginSerializer,
     RefreshTokenSerializer,
     RegisterSerializer,
+    RoleSerializer,
     UserSerializer,
     VerifyEmailSerializer,
 )
@@ -41,6 +50,7 @@ from source.modules.auth.models.user import User
 from source.modules.auth.services.jwt_service import JWTService
 from source.modules.auth.services.login_service import LoginService
 from source.modules.auth.services.register_service import RegisterService
+from source.modules.auth.services.role_service import RoleService
 from source.modules.auth.services.session_service import SessionService
 
 
@@ -324,6 +334,138 @@ class UserProfileAPIView(APIView):
             {
                 "success": True,
                 "data": UserSerializer(request.user).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+# ==========================================================
+# 6. Role-Based Access Control (RBAC) APIs
+# ==========================================================
+
+class RoleListAPIView(APIView):
+    """
+    GET /api/rbac/roles/
+    List all system roles available in AP Studio.
+    Requires: Valid JWT Bearer Token.
+    """
+    authentication_classes = [APStudioJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        roles = RoleService.list_roles()
+        serializer = RoleSerializer(roles, many=True)
+        return Response(
+            {
+                "success": True,
+                "count": roles.count(),
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AssignRoleAPIView(APIView):
+    """
+    POST /api/rbac/assign-role/
+    Assign a new role to an existing user.
+    Requires: Valid JWT Bearer Token with Admin role.
+    """
+    authentication_classes = [APStudioJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminRole]
+
+    def post(self, request):
+        serializer = AssignRoleSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"success": False, "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user_id = serializer.validated_data.get("user_id")
+        email = serializer.validated_data.get("email")
+        target_role = serializer.validated_data["role_name"]
+
+        target_user = None
+        if user_id:
+            target_user = User.objects.filter(id=user_id, is_active=True).first()
+        elif email:
+            target_user = User.objects.filter(email__iexact=email, is_active=True).first()
+
+        if not target_user:
+            return Response(
+                {
+                    "success": False,
+                    "code": "USER_NOT_FOUND",
+                    "message": "Target user was not found or is deactivated.",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        result = RoleService.assign_role(
+            user=target_user,
+            role_name=target_role,
+            assigned_by=request.user,
+        )
+
+        if not result["success"]:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class AdminOnlyDemoAPIView(APIView):
+    """
+    GET /api/rbac/admin-only/
+    Demonstration endpoint strictly restricted to users with Admin role.
+    """
+    authentication_classes = [APStudioJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminRole]
+
+    def get(self, request):
+        return Response(
+            {
+                "success": True,
+                "message": f"Welcome, Admin {request.user.first_name}! You have verified administrator access.",
+                "user": UserSerializer(request.user).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ManagerAccessDemoAPIView(APIView):
+    """
+    GET /api/rbac/manager-only/
+    Demonstration endpoint accessible by both Managers and Admins.
+    """
+    authentication_classes = [APStudioJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsManagerRole]
+
+    def get(self, request):
+        return Response(
+            {
+                "success": True,
+                "message": f"Welcome, {request.user.first_name}! Manager/Admin access confirmed.",
+                "user": UserSerializer(request.user).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class VerifiedUserOnlyDemoAPIView(APIView):
+    """
+    GET /api/rbac/verified-only/
+    Demonstration endpoint requiring email verification.
+    """
+    authentication_classes = [APStudioJWTAuthentication]
+    permission_classes = [IsAuthenticated, IsEmailVerified]
+
+    def get(self, request):
+        return Response(
+            {
+                "success": True,
+                "message": f"Access granted for verified user: {request.user.email}.",
+                "is_email_verified": True,
             },
             status=status.HTTP_200_OK,
         )

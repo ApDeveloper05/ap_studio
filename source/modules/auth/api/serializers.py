@@ -17,6 +17,7 @@ AP Studio
 
 from rest_framework import serializers
 
+from source.modules.auth.models.role import Role
 from source.modules.auth.models.user import User
 
 
@@ -67,3 +68,32 @@ class LoginOTPVerifySerializer(serializers.Serializer):
 
 class RefreshTokenSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
+
+
+class RoleSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing system roles.
+    """
+    class Meta:
+        model = Role
+        fields = [
+            "id",
+            "role_name",
+            "description",
+            "created_at",
+        ]
+
+
+class AssignRoleSerializer(serializers.Serializer):
+    """
+    Serializer for admin role assignment endpoint.
+    Accepts either user_id or email, plus the desired target role_name.
+    """
+    user_id = serializers.UUIDField(required=False)
+    email = serializers.EmailField(required=False)
+    role_name = serializers.CharField(max_length=50)
+
+    def validate(self, attrs):
+        if not attrs.get("user_id") and not attrs.get("email"):
+            raise serializers.ValidationError("Either 'user_id' or 'email' must be provided.")
+        return attrs

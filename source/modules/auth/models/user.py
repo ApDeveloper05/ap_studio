@@ -91,5 +91,22 @@ class User(BaseModel):
         """Always return False for User instances (Django & DRF compatibility)."""
         return False
 
+    @property
+    def is_admin(self) -> bool:
+        """Check if user has admin role."""
+        return bool(self.role and self.role.role_name.lower() == "admin")
+
+    @property
+    def is_manager(self) -> bool:
+        """Check if user has manager or admin role."""
+        return bool(self.role and self.role.role_name.lower() in ["admin", "manager"])
+
+    def has_role(self, *role_names: str) -> bool:
+        """Check if user possesses any of the provided role names (case-insensitive)."""
+        if not self.role:
+            return False
+        current = self.role.role_name.lower()
+        return current in [r.lower() for r in role_names]
+
     def __str__(self) -> str:
         return self.email
