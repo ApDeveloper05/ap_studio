@@ -11,6 +11,18 @@ from source.modules.auth.api.permissions import (
     IsOwnerOrAdmin,
     require_roles,
 )
+from source.modules.auth.api.schema import (
+    APStudioReDocAPIView,
+    APStudioSchemaAPIView,
+    APStudioSwaggerUIAPIView,
+)
+from source.modules.auth.api.throttling import (
+    APStudioAnonRateThrottle,
+    APStudioUserRateThrottle,
+    LoginBurstThrottle,
+    PasswordResetThrottle,
+    RegisterThrottle,
+)
 
 __all__ = [
     "APStudioJWTAuthentication",
@@ -20,4 +32,12 @@ __all__ = [
     "IsEmailVerified",
     "IsOwnerOrAdmin",
     "require_roles",
+    "APStudioAnonRateThrottle",
+    "APStudioUserRateThrottle",
+    "LoginBurstThrottle",
+    "PasswordResetThrottle",
+    "RegisterThrottle",
+    "APStudioSchemaAPIView",
+    "APStudioSwaggerUIAPIView",
+    "APStudioReDocAPIView",
 ]

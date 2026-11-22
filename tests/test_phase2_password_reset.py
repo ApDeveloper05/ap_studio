@@ -72,6 +72,7 @@ if not settings.configured:
 
 django.setup()
 
+from django.core.cache import cache
 from django.core.management import call_command
 from django.test import TestCase
 from rest_framework import status
@@ -101,6 +102,7 @@ class Phase2PasswordResetEngineTests(TestCase):
         )
 
     def setUp(self):
+        cache.clear()
         self.client = APIClient()
 
         self.user = User.objects.create(

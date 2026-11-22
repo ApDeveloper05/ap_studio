@@ -50,6 +50,11 @@ from source.modules.auth.api.serializers import (
     VerifyEmailSerializer,
     VerifyPasswordResetOTPSerializer,
 )
+from source.modules.auth.api.throttling import (
+    LoginBurstThrottle,
+    PasswordResetThrottle,
+    RegisterThrottle,
+)
 from source.modules.auth.models.user import User
 from source.modules.auth.services.jwt_service import JWTService
 from source.modules.auth.services.login_service import LoginService
@@ -75,6 +80,7 @@ class RegisterAPIView(APIView):
     POST /api/auth/register/
     """
     permission_classes = [AllowAny]
+    throttle_classes = [RegisterThrottle]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -161,6 +167,7 @@ class LoginAPIView(APIView):
     Returns: Access Token (15 min) + Refresh Token (7 days).
     """
     permission_classes = [AllowAny]
+    throttle_classes = [LoginBurstThrottle]
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -207,6 +214,7 @@ class LoginOTPRequestAPIView(APIView):
     Dispatches 8-digit emergency code to user's email.
     """
     permission_classes = [AllowAny]
+    throttle_classes = [LoginBurstThrottle]
 
     def post(self, request):
         serializer = LoginOTPRequestSerializer(data=request.data)
@@ -486,6 +494,7 @@ class ForgotPasswordAPIView(APIView):
     Initiate password reset by dispatching a secure 15-minute OTP to email.
     """
     permission_classes = [AllowAny]
+    throttle_classes = [PasswordResetThrottle]
 
     def post(self, request):
         serializer = ForgotPasswordRequestSerializer(data=request.data)

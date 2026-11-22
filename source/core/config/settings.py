@@ -26,7 +26,7 @@ PROJECT_NAME = "AP Studio"
 
 PROJECT_FULL_NAME = "Aryan Parmar Studio"
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
 AUTHOR = "Aryan Parmar"
 
@@ -121,3 +121,19 @@ MAX_LOGIN_ATTEMPTS = 3
 # Use console backend to print emails/OTPs to the terminal during testing.
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 EMAIL_HOST_USER = "testing@apstudio.com"
+
+
+# ==========================================================
+# REST API & Rate Limiting (Throttling) Settings
+# ==========================================================
+
+JWT_ACCESS_LIFETIME_MINUTES = 15
+JWT_REFRESH_LIFETIME_DAYS = 7
+
+DEFAULT_THROTTLE_RATES = {
+    "anon": "30/minute",
+    "user": "120/minute",
+    "login_burst": "5/minute",
+    "password_reset": "3/minute",
+    "register": "10/hour",
+}

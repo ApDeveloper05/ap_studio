@@ -17,6 +17,11 @@ AP Studio
 
 from django.urls import path
 
+from source.modules.auth.api.schema import (
+    APStudioReDocAPIView,
+    APStudioSchemaAPIView,
+    APStudioSwaggerUIAPIView,
+)
 from source.modules.auth.api.views import (
     AdminOnlyDemoAPIView,
     AssignRoleAPIView,
@@ -62,4 +67,9 @@ urlpatterns = [
     path("password/verify-otp/", VerifyPasswordResetOTPAPIView.as_view(), name="api_password_verify_otp"),
     path("password/reset/", ResetPasswordAPIView.as_view(), name="api_password_reset"),
     path("password/change/", ChangePasswordAPIView.as_view(), name="api_password_change"),
+
+    # Interactive Documentation & OpenAPI Specification (Sprint 2.4)
+    path("schema/", APStudioSchemaAPIView.as_view(), name="api_schema"),
+    path("docs/", APStudioSwaggerUIAPIView.as_view(), name="api_swagger_ui"),
+    path("redoc/", APStudioReDocAPIView.as_view(), name="api_redoc"),
 ]
