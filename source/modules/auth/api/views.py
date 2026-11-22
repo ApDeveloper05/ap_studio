@@ -37,18 +37,23 @@ from source.modules.auth.api.permissions import (
 )
 from source.modules.auth.api.serializers import (
     AssignRoleSerializer,
+    ChangePasswordSerializer,
+    ForgotPasswordRequestSerializer,
     LoginOTPRequestSerializer,
     LoginOTPVerifySerializer,
     LoginSerializer,
     RefreshTokenSerializer,
     RegisterSerializer,
+    ResetPasswordWithTokenSerializer,
     RoleSerializer,
     UserSerializer,
     VerifyEmailSerializer,
+    VerifyPasswordResetOTPSerializer,
 )
 from source.modules.auth.models.user import User
 from source.modules.auth.services.jwt_service import JWTService
 from source.modules.auth.services.login_service import LoginService
+from source.modules.auth.services.password_reset_service import PasswordResetService
 from source.modules.auth.services.register_service import RegisterService
 from source.modules.auth.services.role_service import RoleService
 from source.modules.auth.services.session_service import SessionService
@@ -469,3 +474,131 @@ class VerifiedUserOnlyDemoAPIView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+# ==========================================================
+# 7. Enterprise Password Reset & Recovery APIs
+# ==========================================================
+
+class ForgotPasswordAPIView(APIView):
+    """
+    POST /api/password/forgot/
+    Initiate password reset by dispatching a secure 15-minute OTP to email.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"success": False, "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ip, agent = _get_client_metadata(request)
+        result = PasswordResetService.request_reset(
+            email=serializer.validated_data["email"],
+            ip_address=ip,
+            user_agent=agent,
+        )
+
+        if not result["success"]:
+            if result.get("code") == "ACCOUNT_SEIZED_24H":
+                return Response(result, status=status.HTTP_423_LOCKED)
+            if result.get("code") == "USER_NOT_FOUND":
+                return Response(result, status=status.HTTP_404_NOT_FOUND)
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class VerifyPasswordResetOTPAPIView(APIView):
+    """
+    POST /api/password/verify-otp/
+    Verify password reset OTP and obtain a single-use JWT reset token.
+    3 failed attempts trigger a 24-hour account seizure.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = VerifyPasswordResetOTPSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"success": False, "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ip, agent = _get_client_metadata(request)
+        result = PasswordResetService.verify_reset_otp(
+            email=serializer.validated_data["email"],
+            otp=serializer.validated_data["otp"],
+            ip_address=ip,
+            user_agent=agent,
+        )
+
+        if not result["success"]:
+            if result.get("code") == "ACCOUNT_SEIZED_24H":
+                return Response(result, status=status.HTTP_423_LOCKED)
+            if result.get("code") == "USER_NOT_FOUND":
+                return Response(result, status=status.HTTP_404_NOT_FOUND)
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class ResetPasswordAPIView(APIView):
+    """
+    POST /api/password/reset/
+    Reset user password using single-use reset token.
+    Enforces anti-replay security & instant multi-device session killswitch.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ResetPasswordWithTokenSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"success": False, "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        result = PasswordResetService.reset_password_with_token(
+            reset_token=serializer.validated_data["reset_token"],
+            new_password=serializer.validated_data["new_password"],
+            confirm_password=serializer.validated_data["confirm_password"],
+        )
+
+        if not result["success"]:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class ChangePasswordAPIView(APIView):
+    """
+    POST /api/password/change/
+    In-session password change for authenticated users.
+    Requires: Valid JWT Bearer Token.
+    """
+    authentication_classes = [APStudioJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"success": False, "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        result = PasswordResetService.change_password(
+            user=request.user,
+            current_password=serializer.validated_data["current_password"],
+            new_password=serializer.validated_data["new_password"],
+            confirm_password=serializer.validated_data["confirm_password"],
+        )
+
+        if not result["success"]:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(result, status=status.HTTP_200_OK)

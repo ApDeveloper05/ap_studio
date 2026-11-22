@@ -213,3 +213,52 @@ class JWTService:
         token_pair = cls.generate_token_pair(user=user, session=session)
 
         return True, "Token refreshed successfully.", token_pair
+
+    # ==========================================================
+    # Single-Use Password Reset Tokens
+    # ==========================================================
+
+    @classmethod
+    def generate_reset_token(cls, *, user: User, expiry_minutes: int = 15) -> str:
+        """
+        Generate a cryptographically signed, single-purpose password reset token.
+        Includes a password fingerprint to ensure one-time use (anti-replay).
+        """
+        now = int(time.time())
+        exp = now + (expiry_minutes * 60)
+        fingerprint = hashlib.sha256(user.password.encode("utf-8")).hexdigest()[:16]
+
+        payload = {
+            "token_type": "password_reset",
+            "user_id": str(user.id),
+            "email": user.email,
+            "iat": now,
+            "exp": exp,
+            "pwd_fingerprint": fingerprint,
+        }
+        return cls.encode(payload)
+
+    @classmethod
+    def verify_reset_token(cls, token: str) -> tuple[bool, str, User | None]:
+        """
+        Validate password reset token and verify anti-replay password fingerprint.
+        Returns (is_valid: bool, error_message: str, user: User | None).
+        """
+        is_valid, err, payload = cls.decode(token)
+        if not is_valid or not payload:
+            return False, f"Invalid or expired token: {err}", None
+
+        if payload.get("token_type") != "password_reset":
+            return False, "Invalid token type. Password reset token expected.", None
+
+        user_id = payload.get("user_id")
+        user = User.objects.filter(id=user_id, is_active=True).first()
+        if not user:
+            return False, "User account not found or is deactivated.", None
+
+        # Anti-replay check: Verify current password hash fingerprint matches
+        current_fingerprint = hashlib.sha256(user.password.encode("utf-8")).hexdigest()[:16]
+        if payload.get("pwd_fingerprint") != current_fingerprint:
+            return False, "This reset token has already been used or invalidated.", None
+
+        return True, "Valid", user

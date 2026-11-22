@@ -97,3 +97,28 @@ class AssignRoleSerializer(serializers.Serializer):
         if not attrs.get("user_id") and not attrs.get("email"):
             raise serializers.ValidationError("Either 'user_id' or 'email' must be provided.")
         return attrs
+
+
+class ForgotPasswordRequestSerializer(serializers.Serializer):
+    """Serializer for requesting a password reset OTP."""
+    email = serializers.EmailField()
+
+
+class VerifyPasswordResetOTPSerializer(serializers.Serializer):
+    """Serializer for verifying password reset OTP and obtaining a reset token."""
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=10)
+
+
+class ResetPasswordWithTokenSerializer(serializers.Serializer):
+    """Serializer for resetting password with single-use reset token."""
+    reset_token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True, min_length=8)
+    confirm_password = serializers.CharField(write_only=True, min_length=8)
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """Serializer for authenticated in-session password change."""
+    current_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True, min_length=8)
+    confirm_password = serializers.CharField(write_only=True, min_length=8)

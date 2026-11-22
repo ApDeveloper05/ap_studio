@@ -20,6 +20,8 @@ from django.urls import path
 from source.modules.auth.api.views import (
     AdminOnlyDemoAPIView,
     AssignRoleAPIView,
+    ChangePasswordAPIView,
+    ForgotPasswordAPIView,
     LoginAPIView,
     LoginOTPRequestAPIView,
     LoginOTPVerifyAPIView,
@@ -27,10 +29,12 @@ from source.modules.auth.api.views import (
     ManagerAccessDemoAPIView,
     RefreshTokenAPIView,
     RegisterAPIView,
+    ResetPasswordAPIView,
     RoleListAPIView,
     UserProfileAPIView,
     VerifiedUserOnlyDemoAPIView,
     VerifyEmailAPIView,
+    VerifyPasswordResetOTPAPIView,
 )
 
 app_name = "auth_api"
@@ -52,4 +56,10 @@ urlpatterns = [
     path("rbac/admin-only/", AdminOnlyDemoAPIView.as_view(), name="api_rbac_admin_only"),
     path("rbac/manager-only/", ManagerAccessDemoAPIView.as_view(), name="api_rbac_manager_only"),
     path("rbac/verified-only/", VerifiedUserOnlyDemoAPIView.as_view(), name="api_rbac_verified_only"),
+
+    # Password Reset & Recovery Endpoints
+    path("password/forgot/", ForgotPasswordAPIView.as_view(), name="api_password_forgot"),
+    path("password/verify-otp/", VerifyPasswordResetOTPAPIView.as_view(), name="api_password_verify_otp"),
+    path("password/reset/", ResetPasswordAPIView.as_view(), name="api_password_reset"),
+    path("password/change/", ChangePasswordAPIView.as_view(), name="api_password_change"),
 ]
